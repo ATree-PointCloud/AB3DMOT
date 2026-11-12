@@ -91,10 +91,21 @@ class Calibration(object):
         with open(filepath, 'r') as f:
             for line in f.readlines():
                 line = line.rstrip()
-                if len(line)==0: continue
-                key, value = line.split(':', 1)
+                if len(line) == 0: continue
+                if ":" in line:
+                    key, value = line.split(':', 1)
+                else:
+                    key, value = line.split(None, 1)
                 # The only non-float values in these files are dates, which
                 # we don't care about anyway
+                key = key.strip()
+                aliases = {
+                    'R_rect': 'R0_rect',
+                    'Tr_velo_cam': 'Tr_velo_to_cam',
+                    'Tr_imu_velo': 'Tr_imu_to_velo',
+                }
+                key = aliases.get(key, key)
+
                 try:
                     data[key] = np.array([float(x) for x in value.split()])
                 except ValueError:

@@ -105,3 +105,8 @@ venv.bak/
 results/
 deprecated/
 tmp/*
+# Project-local settings, secrets and experiment outputs
+.idea/
+.env.*
+!.env.example
+runs/

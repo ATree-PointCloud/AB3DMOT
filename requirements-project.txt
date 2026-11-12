@@ -1,0 +1,34 @@
+# Environment preparation: Ubuntu 22.04, Python 3.10.8 (AutoDL, CPU-only mode).
+# Incremental installation: numerical checks, main.py --help, evaluation module
+# import, and pip check passed. Actual tracking/evaluation is not yet validated.
+# Clean installation from this file has not been separately tested.
+# Transitive dependencies are not fully locked in this file.
+# Current workflow: install/verify step by step remotely; keep records locally.
+# Run from the project root, inside the remote project venv:
+# python -m pip install -r requirements.txt
+
+numpy==1.23.5
+scipy==1.10.1
+numba==0.57.1
+llvmlite==0.40.1
+matplotlib==3.7.5
+filterpy==1.4.5
+
+# Configuration and file discovery (versions and functional checks confirmed).
+PyYAML==6.0.1
+easydict==1.9
+glob2==0.6
+
+# Image processing and terminal tables.
+# OpenCV pin is the requested install version; cv2 reports 4.8.1 and passed
+# conversion checks. Confirm the full distribution version via pip metadata.
+# Do not install opencv-python alongside this headless distribution.
+opencv-python-headless==4.8.1.78
+scikit-image==0.21.0
+terminaltables==3.1.10
+
+# Source dependencies are separate Git checkouts, not PyPI packages here:
+# AB3DMOT: 61f3bd72574093e367916c757b4747ca445f978c
+# Xinshuo_PyToolbox: 1918b9e37ec5fb8148b8a089f226a4864d67b153
+# See manifests/upstream-version.md for source paths and PYTHONPATH setup.
+# munkres.py and mailpy.py are supplied by AB3DMOT/scripts/KITTI.

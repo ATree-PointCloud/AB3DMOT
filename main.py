@@ -11,20 +11,62 @@ from xinshuo_io import mkdir_if_missing, save_txt_file
 from xinshuo_miscellaneous import get_timestring, print_log
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='AB3DMOT')
-    parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
-    parser.add_argument('--split', type=str, default='', help='train, val, test')
-    parser.add_argument('--det_name', type=str, default='', help='pointrcnn')
-    args = parser.parse_args()
-    return args
+	parser = argparse.ArgumentParser(description='AB3DMOT')
+	parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
+	parser.add_argument('--split', type=str, default='', help='train, val, test')
+	parser.add_argument('--det_name', type=str, default='', help='pointrcnn')
+	args = parser.parse_args()
+	return args
 
-def main_per_cat(cfg, cat, log, ID_start):
-
+def main_per_cat(
+		cfg, cat, log, ID_start, *,
+		tracking_root=None, detection_dir=None, sequences=None,
+):
 	# get data-cat-split specific path
 	result_sha = '%s_%s_%s' % (cfg.det_name, cat, cfg.split)
-	det_root = os.path.join('./data', cfg.dataset, 'detection', result_sha)
 	subfolder, det_id2str, hw, seq_eval, data_root = get_subfolder_seq(cfg.dataset, cfg.split)
-	trk_root = os.path.join(data_root, 'tracking')
+
+	if tracking_root is None:
+		trk_root = os.path.join(data_root, 'tracking')
+	else:
+		trk_root = os.fspath(tracking_root)
+
+	if detection_dir is None:
+		det_root = os.path.join('./data', cfg.dataset, 'detection', result_sha)
+	else:
+		det_root = os.fspath(detection_dir)
+
+
+	if sequences is not None:
+		if isinstance(sequences, (str, bytes)):
+			raise TypeError("sequences must be a list, not a string")
+
+		seq_eval = list(sequences)
+
+		if not seq_eval:
+			raise ValueError("sequences must not be empty")
+		if any(
+				not isinstance(seq, str)
+				or len(seq) != 4
+				or not seq.isascii()
+				or not seq.isdigit()
+				for seq in seq_eval
+		):
+			raise ValueError("Use four-digit sequence names, e.g. '0001'")
+		if len(seq_eval) != len(set(seq_eval)):
+			raise ValueError("Duplicate sequence names")
+
+	if not os.path.isdir(trk_root):
+		raise FileNotFoundError(trk_root)
+	if not os.path.isdir(det_root):
+		raise FileNotFoundError(det_root)
+
+	for seq_name in seq_eval:
+		detection_file = os.path.join(det_root, seq_name + '.txt')
+		if not os.path.isfile(detection_file):
+			raise FileNotFoundError(detection_file)
+
+
 	save_dir = os.path.join(cfg.save_root, result_sha + '_H%d' % cfg.num_hypo); mkdir_if_missing(save_dir)
 
 	# create eval dir for each hypothesis 

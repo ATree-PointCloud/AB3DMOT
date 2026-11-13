@@ -1015,7 +1015,7 @@ class trackingEvaluation(object):
 
         if threshold is None: summary = self.createSummary_details()
         else: summary = self.createSummary_simple(threshold, recall)
-        mail.msg(summary)       # mail or print the summary.
+        self.mail.msg(summary)       # mail or print the summary.
         print(summary, file=dump)
 
 class stat:

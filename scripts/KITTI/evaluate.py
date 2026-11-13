@@ -109,7 +109,7 @@ class trackingEvaluation(object):
     """
 
     def __init__(self, t_sha, gt_path="./scripts/KITTI", max_truncation = 0, min_height = 25, max_occlusion = 2, \
-        mail=None, cls="car", eval_3diou=True, eval_2diou=False, num_hypo=1, thres=None):
+        mail=None, cls="car", eval_3diou=True, eval_2diou=False, num_hypo=1, thres=None, results_root=None, sequences=None):
         # get number of sequences and
         # get number of frames per sequence from test mapping
         # (created while extracting the benchmark)
@@ -124,6 +124,14 @@ class trackingEvaluation(object):
         fh.close()
         self.n_sequences = i+1
 
+        if sequences is not None:
+            indices = [self.sequence_name.index(name) for name in sequences]
+            if not indices:
+                raise ValueError("No sequences selected for evaluation")
+            self.sequence_name = [self.sequence_name[i] for i in indices]
+            self.n_frames = [self.n_frames[i] for i in indices]
+            self.n_sequences = len(indices)
+
         # mail object
         self.mail = mail
 
@@ -133,7 +141,10 @@ class trackingEvaluation(object):
         # data and parameter
         self.gt_path           = os.path.join(gt_path, "label")
         self.t_sha             = t_sha
-        self.t_path            = os.path.join("./results/KITTI", t_sha, "data_%d" % (int(num_hypo)-1))
+        if results_root is None:
+            results_root = "./results/KITTI"
+
+        self.t_path            = os.path.join(os.fspath(results_root), t_sha, "data_%d" % (int(num_hypo)-1))
         
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
@@ -1011,7 +1022,7 @@ class stat:
     """
         Utility class to load data.
     """
-    def __init__(self, t_sha, cls, suffix, dump):
+    def __init__(self, t_sha, cls, suffix, dump, results_root=None):
         """
             Constructor, initializes the object given the parameters.
         """
@@ -1035,6 +1046,7 @@ class stat:
         self.recall_list = list()
 
         self.t_sha = t_sha
+        self.results_root = "./results/KITTI" if results_root is None else os.fspath(results_root)
         self.cls = cls
         self.suffix = suffix
         self.dump = dump
@@ -1110,7 +1122,7 @@ class stat:
         # zxc
 
     def plot(self):
-        save_dir = os.path.join("./results/KITTI", self.t_sha)
+        save_dir = os.path.join(self.results_root, self.t_sha)
 
         self.plot_over_recall(self.mota_list, 'MOTA - Recall Curve', 'MOTA', os.path.join(save_dir, 'MOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.sMOTA_list, 'sMOTA - Recall Curve', 'sMOTA', os.path.join(save_dir, 'sMOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
@@ -1120,7 +1132,7 @@ class stat:
         self.plot_over_recall(self.fn_list, 'False Negative - Recall Curve', 'False Negative', os.path.join(save_dir, 'FN_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.precision_list, 'Precision - Recall Curve', 'Precision', os.path.join(save_dir, 'precision_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
 
-def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres):
+def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres,results_root=None,sequences=None):
     """
         Entry point for evaluation, will load the data and start evaluation for
         CAR and PEDESTRIAN if available.
@@ -1136,7 +1148,7 @@ def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres):
     classes = []
     # for c in ("car", "pedestrian", "cyclist"):
     for c in ("cyclist", "pedestrian", "car"):
-        e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou,num_hypo=num_hypo,thres=thres)
+        e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou,num_hypo=num_hypo,thres=thres,results_root=results_root,sequences=sequences)
         # load tracker data and check provided classes
         try:
             if not e.loadTracker():
@@ -1162,7 +1174,7 @@ def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres):
         if eval_3diou: suffix = 'eval3D'
         else: suffix = 'eval2D'
         filename = os.path.join(e.t_path, "../summary_%s_average_%s.txt" % (c, suffix)); dump = open(filename, "w+")
-        stat_meter = stat(t_sha=result_sha, cls=c, suffix=suffix, dump=dump)
+        stat_meter = stat(t_sha=result_sha, cls=c, suffix=suffix, dump=dump, results_root=results_root)
         e.compute3rdPartyMetrics()
 
         # evaluate the mean average metrics

@@ -1,5 +1,9 @@
 # AB3DMOT
 
+> 本仓库是用于学习与工程改进的 AB3DMOT fork。上游基点为 `61f3bd72574093e367916c757b4747ca445f978c`；下方英文内容保留上游说明。项目进度与当前目录约定见 [当前状态与下一步](docs/project/当前状态与下一步.md)，验收要求见 [项目需求文档](docs/project/项目需求文档.md)，指导流程见 [项目实施路线](docs/project/项目实施路线.md)。
+>
+> 截至 2026-11-12：本地 Python 3.11.8 环境、批量依赖安装及核心数值检查通过；辅助库已固定版本，跟踪/评测入口导入通过，实际输入、跟踪和评测待验证。入口为 `scripts/run_tracking.py`。`requirements.txt` 为上游旧依赖，当前安装使用 `requirements-project.txt`；Windows 环境快照见 `manifests/environment-local-py311-windows.txt`。
+
 <b>3D Multi-Object Tracking: A Baseline and New Evaluation Metrics (IROS 2020, ECCVW 2020)</b>
 
 This repository contains the official python implementation for our full paper at IROS 2020 "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT/proceeding.pdf)" and short paper "[AB3DMOT: A Baseline for 3D Multi-Object Tracking and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT_eccvw/camera_ready.pdf)" at ECCVW 2020. Our project website and video demos are [here](http://www.xinshuoweng.com/projects/AB3DMOT/). If you find our paper or code useful, please cite our papers:

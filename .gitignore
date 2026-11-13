@@ -110,3 +110,4 @@ tmp/*
 .env.*
 !.env.example
 runs/
+.work/
